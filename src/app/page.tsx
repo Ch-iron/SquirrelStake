@@ -1,5 +1,19 @@
-import { redirect } from "next/navigation";
+import { LandingNav } from '@/components/landing/LandingNav';
+import { HeroSection } from '@/components/landing/HeroSection';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { ChainsSection } from '@/components/landing/ChainsSection';
+import { CtaSection } from '@/components/landing/CtaSection';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 
 export default function Home() {
-  redirect("/portfolio");
+  return (
+    <div className="min-h-screen">
+      <LandingNav />
+      <HeroSection />
+      <FeaturesSection />
+      <ChainsSection />
+      <CtaSection />
+      <LandingFooter />
+    </div>
+  );
 }

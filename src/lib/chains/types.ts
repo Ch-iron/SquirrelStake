@@ -1,6 +1,6 @@
 // Chain-agnostic type definitions for multi-chain staking dashboard
 
-export type ChainType = 'cosmos' | 'evm';
+type ChainType = 'cosmos' | 'evm';
 
 export type ChainConfig = {
   id: string;
@@ -20,6 +20,8 @@ export type ChainConfig = {
   unbondingDays: number;
   cosmosKitChainName?: string;
   evmChainId?: number;
+  evmRpc?: string;
+  bech32Prefix?: string;
   stakingApyEndpoint?: string;
 };
 

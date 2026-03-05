@@ -5,13 +5,15 @@ import { useChainStore } from '@/stores/chainStore';
 import { CHAIN_REGISTRY } from '@/lib/chains/registry';
 import { createXplaAdapter } from '@/lib/chains/xpla/adapter';
 import { createXplaClient } from '@/lib/chains/xpla/client';
+import { createSeiAdapter } from '@/lib/chains/sei/adapter';
+import { createCosmosLcdClient } from '@/lib/chains/sei/client';
 import { useWalletInfo } from './useWalletInfo';
 import type { StakingAdapter } from '@/lib/chains/adapter';
 import type { ChainConfig } from '@/lib/chains/types';
 
-const useChain = (): { config: ChainConfig; adapter: StakingAdapter } => {
+const useChain = (): { config: ChainConfig; adapter: StakingAdapter; evmAddress: string | null } => {
   const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
-  const { walletAddress } = useWalletInfo();
+  const { walletAddress, evmAddress } = useWalletInfo();
 
   const config = CHAIN_REGISTRY[selectedChainSlug];
 
@@ -19,18 +21,22 @@ const useChain = (): { config: ChainConfig; adapter: StakingAdapter } => {
     throw new Error(`Chain config not found for slug: ${selectedChainSlug}`);
   }
 
-  // Registry id is already the actual chain ID (e.g. dimension_37-1, cube_47-5)
+  // Registry id is already the actual chain ID (e.g. dimension_37-1)
   const adapter = useMemo(() => {
-    if (config.type === 'cosmos') {
+    if (config.slug === 'xpla') {
       const client = createXplaClient(config.lcd, config.id);
-      // Pass empty string for senderAddress when wallet is not connected
-      // Build*Msg methods won't be called without a connected wallet anyway
       return createXplaAdapter(config, client, walletAddress ?? '');
     }
-    throw new Error(`Unsupported chain type: ${config.type}`);
+
+    if (config.slug === 'sei') {
+      const client = createCosmosLcdClient(config.lcd);
+      return createSeiAdapter(config, client, walletAddress ?? '');
+    }
+
+    throw new Error(`Unsupported chain: ${config.slug}`);
   }, [config, walletAddress]);
 
-  return { config, adapter };
+  return { config, adapter, evmAddress };
 };
 
 export { useChain };

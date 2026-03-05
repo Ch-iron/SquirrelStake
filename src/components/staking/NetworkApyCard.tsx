@@ -1,20 +1,12 @@
 'use client';
 
-import { useChainStore } from '@/stores/chainStore';
-import { CHAIN_REGISTRY } from '@/lib/chains/registry';
 import { useStakingApy } from '@/hooks/useStakingApy';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const NetworkApyCard = () => {
-  const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
-  const chainConfig = CHAIN_REGISTRY[selectedChainSlug];
   const { apy, isLoading } = useStakingApy();
-
-  if (!chainConfig?.stakingApyEndpoint) {
-    return null;
-  }
 
   const formattedApy = apy !== null ? `${(apy * 100).toFixed(2)}%` : null;
 

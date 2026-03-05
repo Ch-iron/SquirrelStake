@@ -4,11 +4,10 @@ import { useDelegations, useBalance, useRewards, useUnbonding } from '@/hooks/us
 import { useChain } from '@/hooks/useChain';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatTokenAmount } from '@/lib/utils/format';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { formatTokenAmount, formatRewardDisplay } from '@/lib/utils/format';
 import { Coins, Wallet, Timer, TrendingUp, Gift } from 'lucide-react';
 import { useStakingApy } from '@/hooks/useStakingApy';
-import { useChainStore } from '@/stores/chainStore';
-import { CHAIN_REGISTRY } from '@/lib/chains/registry';
 
 type IconProps = {
   className?: string;
@@ -17,7 +16,7 @@ type IconProps = {
 // Sum raw string amounts using BigInt to handle large numbers (e.g. 18 decimals)
 const sumAmounts = (amounts: string[]): string => {
   const total = amounts.reduce(
-    (accumulator, amount) => accumulator + BigInt(amount || '0'),
+    (accumulator, amount) => accumulator + BigInt(amount ?? '0'),
     BigInt(0),
   );
   return total.toString();
@@ -29,6 +28,7 @@ type SummaryCardData = {
   icon: React.ComponentType<IconProps>;
   loading: boolean;
   suffix?: string;
+  suffixTooltip?: string | null;
 };
 
 const PortfolioSummaryCards = () => {
@@ -38,9 +38,6 @@ const PortfolioSummaryCards = () => {
   const { data: rewards, isLoading: rewardsLoading } = useRewards();
   const { data: unbondingEntries, isLoading: unbondingLoading } = useUnbonding();
   const { apy, isLoading: apyLoading } = useStakingApy();
-  const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
-  const chainConfig = CHAIN_REGISTRY[selectedChainSlug];
-  const hasApyEndpoint = !!chainConfig?.stakingApyEndpoint;
 
   const totalStaked = delegations
     ? sumAmounts(delegations.map((delegation) => delegation.amount))
@@ -48,22 +45,19 @@ const PortfolioSummaryCards = () => {
   const totalUnbonding = unbondingEntries
     ? sumAmounts(unbondingEntries.map((entry) => entry.amount))
     : '0';
-  const { decimals, symbol } = config.stakingToken;
+  const { decimals, symbol, denom } = config.stakingToken;
+  const rewardDisplay = formatRewardDisplay(rewards?.total ?? '0', decimals, symbol, denom);
 
   const formattedApy = apy !== null ? `${(apy * 100).toFixed(2)}%` : '-';
 
   const cards: SummaryCardData[] = [
-    ...(hasApyEndpoint
-      ? [
-          {
-            label: 'Network Staking APY',
-            value: formattedApy,
-            icon: TrendingUp,
-            loading: apyLoading,
-            suffix: '',
-          },
-        ]
-      : []),
+    {
+      label: 'Network Staking APY',
+      value: formattedApy,
+      icon: TrendingUp,
+      loading: apyLoading,
+      suffix: '',
+    },
     {
       label: 'Total Staked',
       value: formatTokenAmount(totalStaked, decimals, 4),
@@ -78,9 +72,11 @@ const PortfolioSummaryCards = () => {
     },
     {
       label: 'Pending Rewards',
-      value: formatTokenAmount(rewards?.total ?? '0', decimals, 4),
+      value: rewardDisplay.value,
       icon: Gift,
       loading: rewardsLoading,
+      suffix: rewardDisplay.unit,
+      suffixTooltip: rewardDisplay.tooltip,
     },
     {
       label: 'Unbonding',
@@ -91,7 +87,7 @@ const PortfolioSummaryCards = () => {
   ];
 
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 ${hasApyEndpoint ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       {cards.map((card) => (
         <Card key={card.label}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -109,9 +105,22 @@ const PortfolioSummaryCards = () => {
                 {(card.suffix ?? symbol) && (
                   <>
                     {' '}
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {card.suffix ?? symbol}
-                    </span>
+                    {card.suffixTooltip ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm font-normal text-muted-foreground cursor-help underline decoration-dotted underline-offset-2">
+                            {card.suffix}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{card.suffixTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {card.suffix ?? symbol}
+                      </span>
+                    )}
                   </>
                 )}
               </div>

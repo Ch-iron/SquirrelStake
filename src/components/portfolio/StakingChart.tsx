@@ -10,13 +10,24 @@ import { formatTokenAmount } from '@/lib/utils/format';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ChartConfig } from '@/components/ui/chart';
 
-// Generate mock historical data based on current USD value for visualization
+const DAILY_DATA_POINTS = 30;
+
+// Generate mock daily data based on current USD value for visualization
 const generateMockData = (currentUsdValue: number) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map((month, index) => ({
-    month,
-    value: Math.max(0, currentUsdValue * (0.6 + index * 0.08)),
-  }));
+  const today = new Date();
+
+  return Array.from({ length: DAILY_DATA_POINTS }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (DAILY_DATA_POINTS - 1 - index));
+
+    const progress = index / (DAILY_DATA_POINTS - 1);
+    const noise = Math.sin(index * 0.7) * 0.03;
+
+    return {
+      date: `${date.getMonth() + 1}/${date.getDate()}`,
+      value: Math.max(0, currentUsdValue * (0.85 + progress * 0.15 + noise)),
+    };
+  });
 };
 
 const CHART_CONFIG: ChartConfig = {
@@ -38,7 +49,7 @@ const StakingChart = () => {
   const totalStaked = delegations
     ? delegations
         .reduce(
-          (accumulator, delegation) => accumulator + BigInt(delegation.amount || '0'),
+          (accumulator, delegation) => accumulator + BigInt(delegation.amount ?? '0'),
           BigInt(0),
         )
         .toString()
@@ -68,7 +79,7 @@ const StakingChart = () => {
           <ChartContainer config={CHART_CONFIG} className="h-[250px] w-full">
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
+              <XAxis dataKey="date" interval={4} />
               <YAxis tickFormatter={(tick: number) => `$${tick.toFixed(0)}`} />
               <ChartTooltip
                 content={

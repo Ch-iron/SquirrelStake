@@ -11,13 +11,19 @@ type TokenPriceData = {
 
 const fetchTokenPrice = async (coingeckoId: string): Promise<TokenPriceData> => {
   const url = `${COINGECKO_API_URL}?ids=${encodeURIComponent(coingeckoId)}&vs_currencies=usd&include_24hr_change=true`;
-  const response = await fetch(url).catch(() => null);
+  const response = await fetch(url).catch((fetchError) => {
+    console.error('token price fetch error', fetchError);
+    return null;
+  });
 
   if (!response?.ok) {
     return { price: null, change24h: null };
   }
 
-  const data = await response.json().catch(() => null);
+  const data = await response.json().catch((parseError) => {
+    console.error('token price parse error', parseError);
+    return null;
+  });
   if (!data) {
     return { price: null, change24h: null };
   }

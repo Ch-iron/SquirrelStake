@@ -12,15 +12,6 @@ const MAINNET: NetworkInfo = {
   walletconnectID: 0,
 };
 
-// XPLA testnet network configuration
-const TESTNET: NetworkInfo = {
-  name: 'testnet',
-  chainID: 'cube_47-5',
-  lcd: 'https://cube-lcd.xpla.dev',
-  ecd: 'https://cube-evm-rpc.xpla.dev',
-  walletconnectID: 1,
-};
-
 type WalletProviderWrapperProps = {
   children: ReactNode;
 };
@@ -31,7 +22,6 @@ const WalletProviderWrapper = ({ children }: WalletProviderWrapperProps) => {
       defaultNetwork={MAINNET}
       walletConnectChainIds={{
         0: MAINNET,
-        1: TESTNET,
       }}
     >
       {children}

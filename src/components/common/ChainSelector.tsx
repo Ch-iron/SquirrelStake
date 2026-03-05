@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -12,6 +11,7 @@ import {
 import { useChainStore } from '@/stores/chainStore';
 import { CHAIN_REGISTRY } from '@/lib/chains/registry';
 import { useTokenPrice } from '@/hooks/useTokenPrice';
+import { useWalletInfo } from '@/hooks/useWalletInfo';
 
 const CHAIN_OPTIONS = Object.values(CHAIN_REGISTRY);
 
@@ -63,11 +63,17 @@ const TokenInfo = () => {
 const ChainSelector = () => {
   const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
   const setSelectedChainSlug = useChainStore((state) => state.setSelectedChainSlug);
-  const router = useRouter();
+  const { walletType, disconnect } = useWalletInfo();
 
   const handleChainChange = (slug: string) => {
+    const targetChain = CHAIN_REGISTRY[slug];
+
+    // Disconnect cosmos wallet if switching to a chain that doesn't support it
+    if (walletType === 'cosmos' && !targetChain?.cosmosKitChainName) {
+      disconnect();
+    }
+
     setSelectedChainSlug(slug);
-    router.push(`/stake/${slug}`);
   };
 
   return (

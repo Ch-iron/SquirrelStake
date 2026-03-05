@@ -1,5 +1,5 @@
 {
-  "name": "squirrelstake",
+  "name": "orbis",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -18,10 +18,10 @@
     "@interchain-ui/react": "^1.26.3",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tanstack/react-query": "^5.90.21",
-    "@tanstack/react-table": "^8.21.3",
     "@xpla/wallet-provider": "^1.7.2",
     "@xpla/xpla.js": "^1.8.0",
     "@xpla/xpla.proto": "^1.7.0",
+    "bech32": "^2.0.0",
     "chain-registry": "1.69.503",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -37,7 +37,6 @@
     "tailwind-merge": "^3.5.0",
     "viem": "^2.46.3",
     "wagmi": "^2.19.5",
-    "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

@@ -10,11 +10,9 @@ import '@interchain-ui/react/styles';
 import { WALLET_CONNECT_PROJECT_ID } from './constants';
 
 const xplaChain = chains.find((chain) => chain.chain_id === 'dimension_37-1');
-const xplaTestChain = chains.find((chain) => chain.chain_id === 'cube_47-5');
 const xplaAssets = assets.find((assetList) => assetList.chain_name === 'xpla');
-const xplaTestAssets = assets.find((assetList) => assetList.chain_name === 'xplatestnet');
 
-if (!xplaChain || !xplaTestChain || !xplaAssets || !xplaTestAssets) {
+if (!xplaChain || !xplaAssets) {
   throw new Error('XPLA chain data not found in chain-registry');
 }
 
@@ -30,8 +28,8 @@ type CosmosProviderProps = {
 const CosmosProvider = ({ children }: CosmosProviderProps) => {
   return (
     <ChainProvider
-      chains={[xplaChain, xplaTestChain]}
-      assetLists={[xplaAssets, xplaTestAssets]}
+      chains={[xplaChain]}
+      assetLists={[xplaAssets]}
       wallets={allWallets}
       walletConnectOptions={
         WALLET_CONNECT_PROJECT_ID

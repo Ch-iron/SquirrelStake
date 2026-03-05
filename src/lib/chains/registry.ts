@@ -19,30 +19,36 @@ const XPLA_MAINNET: ChainConfig = {
   },
   unbondingDays: 21,
   cosmosKitChainName: 'xpla',
-  stakingApyEndpoint: 'https://dimension-fcd.xpla.dev/v1/dashboard/staking_return',
+  evmChainId: 37,
+  evmRpc: 'https://dimension-evm-rpc.xpla.dev',
+  bech32Prefix: 'xpla',
+  stakingApyEndpoint: 'https://dimension-fcd.xpla.dev/v1/validators/apr',
 };
 
-const XPLA_TESTNET: ChainConfig = {
-  id: 'cube_47-5',
-  slug: 'xpla-testnet',
-  name: 'XPLA Testnet',
+const SEI_MAINNET: ChainConfig = {
+  id: 'pacific-1',
+  slug: 'sei',
+  name: 'Sei',
   type: 'cosmos',
-  logo: '/chains/xpla.png',
-  rpc: 'https://cube-rpc.xpla.dev',
-  lcd: 'https://cube-lcd.xpla.dev',
-  explorer: 'https://explorer.xpla.io/testnet',
+  logo: '/chains/sei.svg',
+  rpc: 'https://rpc.sei-apis.com',
+  lcd: 'https://rest.sei-apis.com',
+  explorer: 'https://www.seiscan.app',
   stakingToken: {
-    denom: 'axpla',
-    decimals: 18,
-    symbol: 'XPLA',
+    denom: 'usei',
+    decimals: 6,
+    symbol: 'SEI',
+    coingeckoId: 'sei-network',
   },
   unbondingDays: 21,
-  cosmosKitChainName: 'xplatestnet',
+  evmChainId: 1329,
+  evmRpc: 'https://evm-rpc.sei-apis.com',
+  bech32Prefix: 'sei',
 };
 
 const CHAIN_REGISTRY: Record<string, ChainConfig> = {
   xpla: XPLA_MAINNET,
-  'xpla-testnet': XPLA_TESTNET,
+  sei: SEI_MAINNET,
 };
 
 const DEFAULT_CHAIN_SLUG = 'xpla';

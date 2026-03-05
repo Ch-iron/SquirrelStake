@@ -14,4 +14,3 @@ const useChainStore = create<ChainStore>((set) => ({
 }));
 
 export { useChainStore };
-export type { ChainStore };

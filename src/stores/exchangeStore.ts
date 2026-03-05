@@ -88,4 +88,3 @@ const useExchangeStore = create<ExchangeStore>()(
 );
 
 export { useExchangeStore };
-export type { ExchangeAddress, ExchangeStore };

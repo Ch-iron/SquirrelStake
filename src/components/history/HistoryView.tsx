@@ -184,7 +184,7 @@ const buildPageNumbers = (
     pages.add(currentPage + 1);
   }
 
-  const sorted = [...pages].sort((a, b) => a - b);
+  const sorted = [...pages].sort((pageA, pageB) => pageA - pageB);
 
   const result: Array<number | 'ellipsis'> = [];
   for (const page of sorted) {

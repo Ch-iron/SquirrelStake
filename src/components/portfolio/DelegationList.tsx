@@ -13,7 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useDelegations } from '@/hooks/useStaking';
 import { useChain } from '@/hooks/useChain';
-import { formatTokenAmount } from '@/lib/utils/format';
+import { formatTokenAmount, formatRewardDisplay } from '@/lib/utils/format';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useChainStore } from '@/stores/chainStore';
@@ -22,7 +23,7 @@ const DelegationList = () => {
   const { config } = useChain();
   const { data: delegations, isLoading } = useDelegations();
   const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
-  const { decimals, symbol } = config.stakingToken;
+  const { decimals, symbol, denom } = config.stakingToken;
 
   if (isLoading) {
     return (
@@ -90,7 +91,28 @@ const DelegationList = () => {
                   {formatTokenAmount(delegation.amount, decimals, 4)} {symbol}
                 </TableCell>
                 <TableCell className="text-right">
-                  {formatTokenAmount(delegation.rewards, decimals, 4)} {symbol}
+                  {(() => {
+                    const reward = formatRewardDisplay(delegation.rewards, decimals, symbol, denom);
+                    return (
+                      <>
+                        {reward.value}{' '}
+                        {reward.tooltip ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-muted-foreground cursor-help underline decoration-dotted underline-offset-2">
+                                {reward.unit}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{reward.tooltip}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <span className="text-muted-foreground">{reward.unit}</span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </TableCell>
               </TableRow>
             ))}

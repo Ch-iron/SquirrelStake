@@ -12,6 +12,12 @@ const WalletProviderWrapper = dynamic(
   { ssr: false },
 );
 
+// Dynamic import EvmProvider to avoid SSR issues with wagmi/RainbowKit
+const EvmProviderWrapper = dynamic(
+  () => import('@/lib/wallet/evmProvider').then((mod) => mod.EvmProvider),
+  { ssr: false },
+);
+
 type ProvidersProps = {
   children: ReactNode;
 };
@@ -30,10 +36,12 @@ const Providers = ({ children }: ProvidersProps) => {
   );
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <WalletProviderWrapper>{children}</WalletProviderWrapper>
+          <WalletProviderWrapper>
+            <EvmProviderWrapper>{children}</EvmProviderWrapper>
+          </WalletProviderWrapper>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

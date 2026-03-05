@@ -66,9 +66,53 @@ const truncateAddress = (
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 };
 
+// Reward display info: value + unit split for separate styling
+type RewardDisplay = {
+  value: string;
+  unit: string;
+  // Tooltip explanation for micro-denom (e.g. "1 SEI = 1,000,000 usei")
+  tooltip: string | null;
+};
+
+// Format reward amount: use micro-denom (e.g. usei) for small-decimal chains
+const formatRewardDisplay = (
+  rawAmount: string,
+  decimals: number,
+  symbol: string,
+  denom: string,
+): RewardDisplay => {
+  const microSymbol = `u${symbol}`;
+
+  if (!rawAmount || rawAmount === '0') {
+    if (decimals <= 6) {
+      const denomFactor = addThousandSeparator(String(10 ** decimals));
+      return { value: '0', unit: microSymbol, tooltip: `1 ${symbol} = ${denomFactor} ${microSymbol}` };
+    }
+    return { value: '0', unit: symbol, tooltip: null };
+  }
+
+  // For small-decimal tokens (e.g. 6 decimals), show raw amount in micro-denom
+  if (decimals <= 6) {
+    const denomFactor = addThousandSeparator(String(10 ** decimals));
+    return {
+      value: addThousandSeparator(rawAmount),
+      unit: microSymbol,
+      tooltip: `1 ${symbol} = ${denomFactor} ${microSymbol}`,
+    };
+  }
+
+  return {
+    value: formatTokenAmount(rawAmount, decimals, 4),
+    unit: symbol,
+    tooltip: null,
+  };
+};
+
 export {
   formatTokenAmount,
   formatPercentage,
   parseTokenAmount,
   truncateAddress,
+  formatRewardDisplay,
 };
+export type { RewardDisplay };

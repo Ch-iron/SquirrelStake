@@ -28,7 +28,7 @@ const ChainBreakdown = () => {
   const totalStaked = delegations
     ? delegations
         .reduce(
-          (accumulator, delegation) => accumulator + BigInt(delegation.amount || '0'),
+          (accumulator, delegation) => accumulator + BigInt(delegation.amount ?? '0'),
           BigInt(0),
         )
         .toString()

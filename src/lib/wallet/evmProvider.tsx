@@ -2,20 +2,53 @@
 
 import type { ReactNode } from 'react';
 import { WagmiProvider, http } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { defineChain } from 'viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { WALLET_CONNECT_PROJECT_ID } from './constants';
 import '@rainbow-me/rainbowkit/styles.css';
 
-// Minimal wagmi config with mainnet placeholder
-// EVM chains will be added as needed when EVM staking support is implemented
+// XPLA mainnet EVM chain definition
+const xplaMainnet = defineChain({
+  id: 37,
+  name: 'XPLA',
+  nativeCurrency: {
+    name: 'XPLA',
+    symbol: 'XPLA',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://dimension-evm-rpc.xpla.dev'] },
+  },
+  blockExplorers: {
+    default: { name: 'XPLA Explorer', url: 'https://explorer.xpla.io/mainnet' },
+  },
+});
+
+// SEI mainnet EVM chain definition
+const seiMainnet = defineChain({
+  id: 1329,
+  name: 'Sei',
+  nativeCurrency: {
+    name: 'SEI',
+    symbol: 'SEI',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://evm-rpc.sei-apis.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'Seiscan', url: 'https://www.seiscan.app' },
+  },
+});
+
 const wagmiConfig = getDefaultConfig({
-  appName: 'SquirrelStake',
+  appName: 'Orbis',
   projectId: WALLET_CONNECT_PROJECT_ID ?? 'placeholder',
-  chains: [mainnet],
+  chains: [xplaMainnet, seiMainnet],
   transports: {
-    [mainnet.id]: http(),
+    [xplaMainnet.id]: http(),
+    [seiMainnet.id]: http(),
   },
 });
 

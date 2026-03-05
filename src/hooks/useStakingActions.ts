@@ -5,6 +5,8 @@ import { useConnectedWallet } from '@xpla/wallet-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { useChain } from './useChain';
 import { useChainStore } from '@/stores/chainStore';
+import { useWalletTypeStore } from '@/stores/walletTypeStore';
+import { useEvmStakingActions } from './useEvmStakingActions';
 import { queryKeys } from '@/lib/queryKeys';
 import type {
   DelegateParams,
@@ -23,7 +25,7 @@ type TxResult = {
   error: string | null;
 };
 
-const useStakingActions = () => {
+const useCosmosStakingActions = () => {
   const connectedWallet = useConnectedWallet();
   const { adapter } = useChain();
   const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
@@ -153,6 +155,20 @@ const useStakingActions = () => {
     splitRewards,
     isReady: !!connectedWallet,
   };
+};
+
+const useStakingActions = () => {
+  const walletType = useWalletTypeStore((state) => state.walletType);
+
+  // Both hooks must always be called (React hook rules)
+  const cosmosActions = useCosmosStakingActions();
+  const evmActions = useEvmStakingActions();
+
+  if (walletType === 'evm') {
+    return evmActions;
+  }
+
+  return cosmosActions;
 };
 
 export { useStakingActions };

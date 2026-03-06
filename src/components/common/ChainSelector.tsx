@@ -9,11 +9,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useChainStore } from '@/stores/chainStore';
-import { CHAIN_REGISTRY } from '@/lib/chains/registry';
+import { CHAIN_REGISTRY, SORTED_CHAIN_CONFIGS } from '@/lib/chains/registry';
 import { useTokenPrice } from '@/hooks/useTokenPrice';
 import { useWalletInfo } from '@/hooks/useWalletInfo';
-
-const CHAIN_OPTIONS = Object.values(CHAIN_REGISTRY);
 
 const formatPrice = (price: number): string => {
   if (price >= 1) {
@@ -87,7 +85,7 @@ const ChainSelector = () => {
           <SelectValue placeholder="Select chain" />
         </SelectTrigger>
         <SelectContent>
-          {CHAIN_OPTIONS.map((chain) => (
+          {SORTED_CHAIN_CONFIGS.map((chain) => (
             <SelectItem key={chain.slug} value={chain.slug}>
               {chain.name}
             </SelectItem>
@@ -109,7 +107,7 @@ const SidebarChainSelector = () => {
         <SelectValue placeholder="Select chain" />
       </SelectTrigger>
       <SelectContent>
-        {CHAIN_OPTIONS.map((chain) => (
+        {SORTED_CHAIN_CONFIGS.map((chain) => (
           <SelectItem key={chain.slug} value={chain.slug}>
             <div className="flex items-center gap-2">
               <Image

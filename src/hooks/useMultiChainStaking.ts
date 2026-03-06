@@ -9,7 +9,7 @@ import {
 } from '@xpla/wallet-provider';
 import { useAccount } from 'wagmi';
 import { useWalletTypeStore } from '@/stores/walletTypeStore';
-import { CHAIN_REGISTRY } from '@/lib/chains/registry';
+import { CHAIN_REGISTRY, SORTED_CHAIN_SLUGS } from '@/lib/chains/registry';
 import { queryKeys } from '@/lib/queryKeys';
 import { evmToBech32 } from '@/lib/utils/address';
 import { fetchAssociatedCosmosAddress } from '@/lib/chains/address-resolution';
@@ -30,7 +30,7 @@ type ChainStakingData = {
   apyLoading: boolean;
 };
 
-const CHAIN_SLUGS = Object.keys(CHAIN_REGISTRY);
+const CHAIN_SLUGS = SORTED_CHAIN_SLUGS;
 
 // Find the first chain config that needs address resolution
 const findAddressResolutionConfig = () => {

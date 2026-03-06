@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatTokenAmount, truncateAddress } from '@/lib/utils/format';
-import { Wallet, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 import type { TxHistoryEntry } from '@/lib/chains/types';
 
 const TX_TYPE_LABELS: Record<TxHistoryEntry['type'], string> = {
@@ -47,7 +48,7 @@ const HistoryView = () => {
   if (!isConnected) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Wallet className="h-16 w-16 text-muted-foreground" />
+        <Image src="/empty.svg" alt="Connect wallet" width={120} height={120} />
         <h2 className="text-2xl font-semibold">Connect Your Wallet</h2>
         <p className="text-muted-foreground">Connect your wallet to view transaction history</p>
       </div>

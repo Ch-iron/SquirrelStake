@@ -85,7 +85,10 @@ const createXplaAdapter = (
     const uniqueAddresses = [...new Set(addresses)];
     const entries = await Promise.all(
       uniqueAddresses.map(async (address) => {
-        const validator = await lcd.staking.validator(address).catch(() => null);
+        const validator = await lcd.staking.validator(address).catch((validatorError) => {
+        console.error('xpla resolve validator error', validatorError);
+        return null;
+      });
         const name = validator?.description.moniker ?? address;
         return [address, name] as const;
       }),
@@ -177,7 +180,7 @@ const createXplaAdapter = (
     limit: number = 20,
     page: number = 1,
   ): Promise<TxHistoryResponse> => {
-    const queryString = `query=message.sender%3D'${address}'&order_by=ORDER_BY_DESC&limit=${limit}&page=${page}`;
+    const queryString = `query=message.sender%3D'${encodeURIComponent(address)}'&order_by=ORDER_BY_DESC&limit=${limit}&page=${page}`;
 
     const response = await fetch(
       `${config.lcd}/cosmos/tx/v1beta1/txs?${queryString}`,

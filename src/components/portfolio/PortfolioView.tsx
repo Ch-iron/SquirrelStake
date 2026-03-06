@@ -3,7 +3,7 @@
 import { useWalletInfo } from '@/hooks/useWalletInfo';
 import { PortfolioSummaryCards } from './PortfolioSummaryCards';
 import { StakingChart } from './StakingChart';
-import { ChainBreakdown } from './ChainBreakdown';
+import { TokenPriceChart } from './TokenPriceChart';
 import { DelegationList } from './DelegationList';
 import Image from 'next/image';
 
@@ -26,11 +26,9 @@ const PortfolioView = () => {
     <div className='flex flex-col gap-6'>
       <h1 className='text-2xl font-bold'>Portfolio</h1>
       <PortfolioSummaryCards />
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        <div className='lg:col-span-2'>
-          <StakingChart />
-        </div>
-        <ChainBreakdown />
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <TokenPriceChart />
+        <StakingChart />
       </div>
       <DelegationList />
     </div>

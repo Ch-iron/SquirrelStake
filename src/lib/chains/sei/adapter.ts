@@ -16,22 +16,19 @@ import type {
   SplitRewardsParams,
   TxHistoryResponse,
 } from '../types';
-import { MSG_TYPE_MAP, mapBondStatus, extractAmount } from '../cosmos-utils';
+import { mapBondStatus } from '../cosmos-utils';
+import {
+  SEI_STAKING_PRECOMPILE_ADDRESS,
+  SEI_DISTRIBUTION_PRECOMPILE_ADDRESS,
+} from './precompile';
 import type { CosmosLcdClient } from './client';
-
-// Extract EVM tx hash from the hex-encoded protobuf `data` field of a Cosmos tx response.
-// The EVM hash is stored as an ASCII string (0x + 64 hex chars) inside the protobuf payload.
-const extractEvmHash = (hexData: string): string | null => {
-  const ascii = hexData.replace(/../g, (pair) => String.fromCharCode(parseInt(pair, 16)));
-  const match = ascii.match(/0x[0-9a-f]{64}/i);
-  return match?.[0] ?? null;
-};
 
 // Create a SEI staking adapter bound to a specific chain config and sender
 const createSeiAdapter = (
   config: ChainConfig,
   client: CosmosLcdClient,
   _senderAddress: string,
+  evmAddress: string = '',
 ): StakingAdapter => {
   const stakingDenom = config.stakingToken.denom;
 
@@ -144,33 +141,109 @@ const createSeiAdapter = (
     return client.getBalance(address, stakingDenom);
   };
 
+  // EVM method signature (4-byte selector) to staking action type mapping
+  // delegate(string): keccak256("delegate(string)")[:4]
+  const EVM_METHOD_TYPE_MAP: Record<string, TxHistoryResponse['entries'][number]['type']> = {
+    '0x9ddb511a': 'delegate',
+    '0x8dfc8897': 'undelegate',
+    '0x7dd0209d': 'redelegate',
+    '0x0442b1ca': 'withdraw_rewards', // withdrawDelegationRewards
+    '0xe35b426f': 'withdraw_rewards', // withdrawMultipleDelegationRewards
+  };
+
+  const STAKING_PRECOMPILES = new Set([
+    SEI_STAKING_PRECOMPILE_ADDRESS.toLowerCase(),
+    SEI_DISTRIBUTION_PRECOMPILE_ADDRESS.toLowerCase(),
+  ]);
+
+  // SeiStream account-level EVM tx response type
+  type SeiStreamEvmTx = {
+    hash: string;
+    timestamp: string;
+    value: string;
+    status: boolean;
+    height: number;
+    to: string;
+    from: string;
+    data: string;
+    method?: string;
+    actionType: string;
+  };
+
+  type SeiStreamResponse = {
+    items: SeiStreamEvmTx[];
+    pagination: { pages: number; rows: string; currPage: number; nextPage: number | null };
+  };
+
+  const classifyEvmTx = (
+    tx: SeiStreamEvmTx,
+  ): { type: TxHistoryResponse['entries'][number]['type']; amount: string | null } => {
+    const toAddress = (tx.to ?? '').toLowerCase();
+    const methodSig = (tx.method ?? tx.data?.slice(0, 10) ?? '').toLowerCase();
+
+    if (!STAKING_PRECOMPILES.has(toAddress)) {
+      // Simple transfer — value is in wei (18 dec), convert to usei (6 dec)
+      const amount = tx.value !== '0' ? (BigInt(tx.value) / BigInt(10 ** 12)).toString() : null;
+      return { type: 'send', amount };
+    }
+
+    const txType = EVM_METHOD_TYPE_MAP[methodSig] ?? 'unknown';
+
+    // For delegate, value is in wei (18 dec), convert to usei (6 dec)
+    const amount = (() => {
+      if (txType === 'delegate' && tx.value !== '0') {
+        return (BigInt(tx.value) / BigInt(10 ** 12)).toString();
+      }
+      return null;
+    })();
+
+    return { type: txType, amount };
+  };
+
   const getTransactionHistory = async (
-    address: string,
+    _address: string,
     limit: number = 20,
     page: number = 1,
   ): Promise<TxHistoryResponse> => {
-    const data = await client.getTxHistory(address, limit, page);
-
-    if (!data.tx_responses) {
+    if (!evmAddress) {
       return { entries: [], total: 0 };
     }
 
-    const total = parseInt(data.total ?? '0', 10);
+    // Use seistream.app account-level EVM tx endpoint (SEI public LCD nodes no longer index tx events)
+    const seiStreamResponse = await fetch(
+      `https://api.seistream.app/accounts/evm/${encodeURIComponent(evmAddress.toLowerCase())}/transactions?page=${page}&limit=${limit}`,
+    ).catch((fetchError) => {
+      console.error('seistream tx history fetch error', fetchError);
+      return null;
+    });
 
-    const entries = data.tx_responses.map((txResponse) => {
-      const firstMessage = txResponse.tx.body.messages[0] ?? {};
-      const messageType = (firstMessage['@type'] as string) ?? '';
-      const txType = MSG_TYPE_MAP[messageType] ?? 'unknown';
+    if (!seiStreamResponse?.ok) {
+      return { entries: [], total: 0 };
+    }
+
+    const data: SeiStreamResponse | null = await seiStreamResponse.json().catch((parseError) => {
+      console.error('seistream tx history parse error', parseError);
+      return null;
+    });
+
+    if (!data?.items) {
+      return { entries: [], total: 0 };
+    }
+
+    const total = parseInt(data.pagination.rows, 10);
+
+    const entries = data.items.map((tx) => {
+      const { type, amount } = classifyEvmTx(tx);
 
       return {
-        hash: txResponse.txhash,
-        evmHash: extractEvmHash(txResponse.data),
-        height: Number(txResponse.height),
-        timestamp: new Date(txResponse.timestamp),
-        type: txType,
-        amount: extractAmount(firstMessage, txType, txResponse.events ?? [], stakingDenom),
-        success: txResponse.code === 0,
-        memo: txResponse.tx.body.memo ?? '',
+        hash: tx.hash,
+        evmHash: tx.hash,
+        height: tx.height,
+        timestamp: new Date(tx.timestamp),
+        type,
+        amount,
+        success: tx.status,
+        memo: '',
       };
     });
 

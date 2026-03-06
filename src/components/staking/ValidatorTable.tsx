@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useValidators, useDelegations } from '@/hooks/useStaking';
 import { useChain } from '@/hooks/useChain';
 import { formatPercentage, formatTokenAmount } from '@/lib/utils/format';
+import Image from 'next/image';
 import { ArrowUpDown, Search, Check } from 'lucide-react';
 import { StakeDialog } from './StakeDialog';
 import type { Validator } from '@/lib/chains/types';
@@ -220,7 +221,7 @@ const ValidatorTable = () => {
                 <TableRow>
                   <TableCell colSpan={5} className='py-8'>
                     <div className='flex flex-col items-center gap-3'>
-                      <img
+                      <Image
                         src='/empty.svg'
                         alt='No validators'
                         width={80}

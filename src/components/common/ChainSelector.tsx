@@ -60,12 +60,11 @@ const TokenInfo = () => {
   );
 };
 
-const ChainSelector = () => {
-  const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
+const useChainChange = () => {
   const setSelectedChainSlug = useChainStore((state) => state.setSelectedChainSlug);
   const { walletType, disconnect } = useWalletInfo();
 
-  const handleChainChange = (slug: string) => {
+  return (slug: string) => {
     const targetChain = CHAIN_REGISTRY[slug];
 
     // Disconnect cosmos wallet if switching to a chain that doesn't support it
@@ -75,6 +74,11 @@ const ChainSelector = () => {
 
     setSelectedChainSlug(slug);
   };
+};
+
+const ChainSelector = () => {
+  const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
+  const handleChainChange = useChainChange();
 
   return (
     <div className="flex items-center gap-3">
@@ -95,4 +99,33 @@ const ChainSelector = () => {
   );
 };
 
-export { ChainSelector };
+const SidebarChainSelector = () => {
+  const selectedChainSlug = useChainStore((state) => state.selectedChainSlug);
+  const handleChainChange = useChainChange();
+
+  return (
+    <Select value={selectedChainSlug} onValueChange={handleChainChange}>
+      <SelectTrigger className="w-full h-8 text-xs font-semibold uppercase tracking-wider px-3">
+        <SelectValue placeholder="Select chain" />
+      </SelectTrigger>
+      <SelectContent>
+        {CHAIN_OPTIONS.map((chain) => (
+          <SelectItem key={chain.slug} value={chain.slug}>
+            <div className="flex items-center gap-2">
+              <Image
+                src={chain.logo}
+                alt={chain.name}
+                width={16}
+                height={16}
+                className="rounded-full"
+              />
+              {chain.name}
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+export { ChainSelector, SidebarChainSelector, TokenInfo };

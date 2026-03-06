@@ -1,16 +1,18 @@
-import { LayoutDashboard, Coins, History } from 'lucide-react';
+import { LayoutDashboard, Coins, History, Globe } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  group?: 'global' | 'chain';
 };
 
 const getNavItems = (selectedChainSlug: string): NavItem[] => [
-  { href: '/portfolio', label: 'Portfolio', icon: LayoutDashboard },
-  { href: `/stake/${selectedChainSlug}`, label: 'Stake', icon: Coins },
-  { href: '/history', label: 'History', icon: History },
+  { href: '/overview', label: 'Overview', icon: Globe, group: 'global' },
+  { href: '/portfolio', label: 'Portfolio', icon: LayoutDashboard, group: 'chain' },
+  { href: `/stake/${selectedChainSlug}`, label: 'Stake', icon: Coins, group: 'chain' },
+  { href: '/history', label: 'History', icon: History, group: 'chain' },
 ];
 
 export { getNavItems };
